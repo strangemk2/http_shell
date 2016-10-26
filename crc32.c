@@ -22,14 +22,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/*----------------------------------------------------------------------------*\
- *  Local functions
-\*----------------------------------------------------------------------------*/
+#include "crc32.h"
 
-static int Crc32_ComputeFile( FILE *file, unsigned long *outCrc32 );
-
-static unsigned long Crc32_ComputeBuf( unsigned long inCrc32, const void *buf,
-                                       size_t bufLen );
 
 /*----------------------------------------------------------------------------*\
  *  NAME:
@@ -46,47 +40,47 @@ static unsigned long Crc32_ComputeBuf( unsigned long inCrc32, const void *buf,
  *     - file errors
 \*----------------------------------------------------------------------------*/
 
-int main( int argc, const char *argv[] )
-{
-    FILE *file = NULL;
-    const char *filename;
-    unsigned long argIdx;
-    unsigned long crc32;
-    int err;
-
-    /** compute crcs **/
-    if (argc < 2) {
-        /** read from 'stdin' if no arguments given **/
-        err = Crc32_ComputeFile( stdin, &crc32 );
-        if (err == -1) goto ERR_EXIT;
-        printf("crc32 = 0x%08lX for (stdin)\n", crc32 );
-    } else {
-        /** report named files in sequence **/
-        for (argIdx=1; argIdx < argc; argIdx++) {
-            filename = argv[argIdx];
-            file = fopen( filename, "rb" );
-            if (file == NULL) {
-                fprintf( stderr, "error opening file \"%s\"!\n", filename );
-                goto ERR_EXIT;
-            }
-            err = Crc32_ComputeFile( file, &crc32 );
-            if (err == -1) goto ERR_EXIT;
-            printf("crc32 = 0x%08lX for \"%s\"\n", crc32, filename );
-            err = fclose( file );
-            file = NULL;
-            if (err == EOF) {
-                fprintf( stderr, "error closing file \"%s\"!\n", filename );
-                goto ERR_EXIT;
-            }
-        }
-    }
-    return( 0 );
-
-    /** error exit **/
-ERR_EXIT:
-    if (file != NULL) fclose( file );
-    exit( 1 );
-}
+// int main( int argc, const char *argv[] )
+// {
+//     FILE *file = NULL;
+//     const char *filename;
+//     unsigned long argIdx;
+//     unsigned long crc32;
+//     int err;
+//
+//     /** compute crcs **/
+//     if (argc < 2) {
+//         /** read from 'stdin' if no arguments given **/
+//         err = Crc32_ComputeFile( stdin, &crc32 );
+//         if (err == -1) goto ERR_EXIT;
+//         printf("crc32 = 0x%08lX for (stdin)\n", crc32 );
+//     } else {
+//         /** report named files in sequence **/
+//         for (argIdx=1; argIdx < argc; argIdx++) {
+//             filename = argv[argIdx];
+//             file = fopen( filename, "rb" );
+//             if (file == NULL) {
+//                 fprintf( stderr, "error opening file \"%s\"!\n", filename );
+//                 goto ERR_EXIT;
+//             }
+//             err = Crc32_ComputeFile( file, &crc32 );
+//             if (err == -1) goto ERR_EXIT;
+//             printf("crc32 = 0x%08lX for \"%s\"\n", crc32, filename );
+//             err = fclose( file );
+//             file = NULL;
+//             if (err == EOF) {
+//                 fprintf( stderr, "error closing file \"%s\"!\n", filename );
+//                 goto ERR_EXIT;
+//             }
+//         }
+//     }
+//     return( 0 );
+//
+//     /** error exit **/
+// ERR_EXIT:
+//     if (file != NULL) fclose( file );
+//     exit( 1 );
+// }
 
 /*----------------------------------------------------------------------------*\
  *  NAME:
@@ -102,7 +96,7 @@ ERR_EXIT:
  *     - file errors
 \*----------------------------------------------------------------------------*/
 
-static int Crc32_ComputeFile( FILE *file, unsigned long *outCrc32 )
+int Crc32_ComputeFile( FILE *file, unsigned long *outCrc32 )
 {
 #   define CRC_BUFFER_SIZE  8192
     unsigned char buf[CRC_BUFFER_SIZE];
@@ -146,7 +140,7 @@ ERR_EXIT:
  *     (no errors are possible)
 \*----------------------------------------------------------------------------*/
 
-static unsigned long Crc32_ComputeBuf( unsigned long inCrc32, const void *buf,
+unsigned long Crc32_ComputeBuf( unsigned long inCrc32, const void *buf,
                                        size_t bufLen )
 {
     static const unsigned long crcTable[256] = {
