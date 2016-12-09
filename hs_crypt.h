@@ -1,4 +1,11 @@
 #pragma once
 
-uint32_t encrypt(uint8_t **out, uint8_t *buf, uint32_t length, const char* password);
-uint32_t decrypt(uint8_t **out, uint8_t *buf, uint32_t length, const char* password);
+// Simple wrapper for tiny-AES128-C
+
+#include <vector>
+
+std::vector<uint8_t> hs_encrypt(const uint8_t *src, uint32_t len, const std::string &password);
+std::vector<uint8_t> hs_decrypt(const uint8_t *src, uint32_t len, const std::string &password);
+
+std::vector<uint8_t> hs_encrypt(const std::vector<uint8_t> &src, const std::string &password);
+std::vector<uint8_t> hs_decrypt(const std::vector<uint8_t> &src, const std::string &password);
