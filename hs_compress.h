@@ -1,6 +1,11 @@
 #pragma once
 
-#include <stdint.h>
+// Simple wrapper for uzlib
 
-uint32_t compress(uint8_t **out, uint8_t *buf, uint32_t length);
-uint32_t decompress(uint8_t **out, uint8_t *buf, uint32_t length);
+#include <vector>
+
+std::vector<uint8_t> hs_gz(const uint8_t *src, size_t len);
+std::vector<uint8_t> hs_gunz(const uint8_t *src, size_t len);
+
+std::vector<uint8_t> hs_gz(const std::vector<uint8_t> &src);
+std::vector<uint8_t> hs_gunz(const std::vector<uint8_t> &src);
