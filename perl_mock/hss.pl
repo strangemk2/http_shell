@@ -1,6 +1,7 @@
 use 5.018;
 
 use lib qw(extlib/lib/perl5);
+use lib qw(/home/void/hs/misc/extlib/lib/perl5);
 
 use List::Util;
 
