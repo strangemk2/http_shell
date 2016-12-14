@@ -1,44 +1,56 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <iostream>
+
 #include <unistd.h>
 
-#include "base64.h"
+#include "hs_http.h"
 #include "hs_crypt.h"
+#include "hs_compress.h"
+#include "hs_base64.h"
+#include "hs_exception.h"
+#include "hs_misc.h"
 
-typedef struct hs_settings_
+constexpr const char *GET_URL = "http://127.0.0.1:3000/abcde";
+constexpr const char *POST_URL = "http://127.0.0.1:3000/fghij";
+
+class hs_settings
 {
-	char *remote_url;
-	char *password;
-	unsigned int interval;
-} hs_settings;
+public:
+	std::string get_url;
+	std::string post_url;
+	std::string password;
+	unsigned int interval = 5;
+
+	void init(int argc, char *argv[]);
+};
+
+void hs_settings::init(int argc, char *argv[])
+{
+	this->get_url = GET_URL;
+	this->post_url = POST_URL;
+	this->password = "random key";
+}
 
 int signal = 0;
 
 void daemonize();
-int hs_setting_init(hs_settings *setting, int argc, char *argv[]);
-int hs(hs_settings *setting);
-int hs_impl(hs_settings *setting);
+int hs(hs_settings &setting);
+void hs_impl(hs_settings &setting);
 
-uint8_t *fetch_hs_data(const char *url);
-void free_hs_data(uint8_t *data);
-
-uint8_t *hs_encrypt(uint8_t *src, size_t len, size_t *out_len, const char *password);
-uint8_t *hs_decrypt(uint8_t *src, size_t len, size_t *out_len, const char *password);
-bool hs_check_data(uint8_t *data);
-bool hs_parse_setting(hs_settings *settings, hs_bencode *bencode);
-bool hs_parse_command(hs_settings *settings, hs_bencode *bencode);
+bool hs_check_data(std::vector<uint8_t> data);
+std::string hs_parse_setting(const std::string &line);
+std::string hs_parse_command(const std::string &line);
 
 int main(int argc, char *argv[])
 {
 	daemonize();
 
 	hs_settings setting;
-	int r = hs_setting_init(&setting, argc, argv);
-	if (r != 0) return r;
+	setting.init(argc, argv);
 
-	return hs(&setting);
+	return hs(setting);
 }
 
 void daemonize()
@@ -46,88 +58,69 @@ void daemonize()
 	return;
 }
 
-int hs_setting_init(hs_settings *setting, int argc, char *argv[])
-{
-	return 0;
-}
-
-int hs(hs_settings *setting)
+int hs(hs_settings &setting)
 {
 	while (signal == 0)
 	{
-		int ret = hs_impl(setting);
-		if (ret != 0)
+		try
+		{
+			hs_impl(setting);
+		}
+		catch (hs_exception &e)
 		{
 			// logger
+			std::cout << e.what() << std::endl;
 		}
-		sleep(setting->interval);
+		sleep(setting.interval);
 	}
 	return 0;
 }
 
-int hs_impl(hs_settings *setting)
+void hs_impl(hs_settings &setting)
 {
-	uint8_t *hs_data = fetch_hs_data(setting->remote_url);
-	if (hs_data == NULL) return 1;
+	auto hres = hs_http_get(setting.get_url);
+	if (hres.body.length() == 0) return;
+	auto deflated = hs_gunzip(
+			hs_decrypt(
+				hs_base64_decode(reinterpret_cast<const unsigned char *>(hres.body.c_str()), hres.body.length()),
+				setting.password));
 
-	size_t base64_decoded_len;
-	uint8_t *base64_decoded = base64_decode(hs_data, strlen((char *)hs_data), &base64_decoded_len);
-	free_hs_data(hs_data);
-	if (base64_decoded == NULL) return 2;
+	hs_check_data(deflated);
 
-	uint8_t *decrypted = hs_decrypt(base64_decoded, base64_decoded_len);
-	free(base64_decoded);
-	if (decrypted == NULL) return 3;
-
-	if (hs_check_data(decrypted))
+	std::string result;
+	std::istringstream iss(std::string(deflated.begin(), deflated.end()));
+	std::string line;
+	while (std::getline(iss, line))
 	{
-		hs_parse_setting(setting, b);
-		hs_parse_command(setting, b);
+		if (line.compare(0, 2, "s:"))
+		{
+			result += hs_parse_setting(line);
+		}
+		else
+		{
+			result += hs_parse_command(line);
+		}
 	}
 
-	free(decrypted);
+	auto encoded_data = hs_base64_encode(
+			hs_encrypt(
+				hs_gzip(reinterpret_cast<const unsigned char *>(result.c_str()), result.length()),
+				setting.password));
+	auto post_data = std::string("data=") + url_encode(std::string(encoded_data.begin(), encoded_data.end()));
+	hs_http_post(setting.post_url, post_data, "");
 }
 
-uint8_t *fetch_hs_data(const char *url)
+bool hs_check_data(std::vector<uint8_t> data)
 {
-	char *ret = NULL;
-	struct http_response *hrep = http_get(url, NULL, getenv("http_proxy"));
-	if (hrep && 200 <= hrep->status_code_int && hrep->status_code_int < 300)
-	{
-		ret =  strdup(hrep->body);
-	}
-	http_response_free(hrep);
-
-	return ret;
+	return true;
 }
 
-void free_hs_data(uint8_t *data)
+std::string hs_parse_setting(const std::string &line)
 {
-	free(data);
+	return line;
 }
 
-uint8_t *hs_encrypt(uint8_t *src, size_t len, size_t *out_len, const char *password)
+std::string hs_parse_command(const std::string &line)
 {
-	uint8_t *ret = NULL;
-	*out_len = encrypt(&ret, src, len, password);
-	return ret;
-}
-
-uint8_t *hs_decrypt(uint8_t *src, size_t len, size_t *out_len, const char *password)
-{
-	uint8_t *ret = NULL;
-	*out_len = decrypt(&ret, src, len, password);
-	return ret;
-}
-
-bool hs_check_data(uint8_t *data)
-{
-}
-
-bool hs_parse_setting(hs_settings *settings, hs_bencode *bencode)
-{
-}
-
-bool hs_parse_command(hs_settings *settings, hs_bencode *bencode)
-{
+	return line;
 }

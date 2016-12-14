@@ -2,8 +2,8 @@ CC=gcc
 CFLAGS=-Wall -g
 CPP=g++
 CPPFLAGS=$(CFLAGS) -std=c++11
-LDFLAGS=
-OBJS=base64.o crc32.o hs_http.o hs_crypt.o hs_compress.o hs_base64.o
+LDFLAGS=-Luzlib/lib -ltinf tiny-AES128-C/aes.o tiny-AES128-C/md5.o
+OBJS=base64.o crc32.o hs_http.o hs_crypt.o hs_compress.o hs_base64.o hs_misc.o
 DEPS=hs_exception.h
 
 all: hs
@@ -30,6 +30,9 @@ hs_compress.o: hs_compress.cpp hs_compress.h $(DEPS)
 
 hs_base64.o: hs_base64.cpp hs_base64.h $(DEPS)
 	$(CPP) $(CPPFLAGS) hs_base64.cpp -c
+
+hs_misc.o: hs_misc.cpp hs_misc.h $(DEPS)
+	$(CPP) $(CPPFLAGS) hs_misc.cpp -c
 
 ################################################################################
 
