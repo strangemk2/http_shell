@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS=-Wall -g
 CPP=g++
 CPPFLAGS=$(CFLAGS) -std=c++11
-LDFLAGS=-Luzlib/lib -ltinf tiny-AES128-C/aes.o tiny-AES128-C/md5.o
+LDFLAGS=-Luzlib/lib -ltinf -Ltiny-AES128-C -ltiny_aes128
 OBJS=base64.o crc32.o hs_http.o hs_crypt.o hs_compress.o hs_base64.o hs_misc.o
 DEPS=hs_exception.h
 
