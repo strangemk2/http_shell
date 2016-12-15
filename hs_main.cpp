@@ -12,8 +12,7 @@
 #include "hs_exception.h"
 #include "hs_misc.h"
 
-constexpr const char *GET_URL = "http://127.0.0.1:3000/abcde";
-constexpr const char *POST_URL = "http://127.0.0.1:3000/fghij";
+#include "hs_static.h"
 
 class hs_settings
 {
@@ -21,7 +20,7 @@ public:
 	std::string get_url;
 	std::string post_url;
 	std::string password;
-	unsigned int interval = 5;
+	unsigned int interval = INTERVAL;
 
 	void init(int argc, char *argv[]);
 };
@@ -30,7 +29,7 @@ void hs_settings::init(int argc, char *argv[])
 {
 	this->get_url = GET_URL;
 	this->post_url = POST_URL;
-	this->password = "random key";
+	this->password = PASSWORD;
 }
 
 int signal = 0;
