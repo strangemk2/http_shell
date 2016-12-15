@@ -46,3 +46,40 @@ std::string hs_exec(const std::string &cmd)
     }
     return result;
 }
+
+// http://stackoverflow.com/questions/236129/split-a-string-in-c
+void split(const std::string &s, char delim, std::vector<std::string> &elems)
+{
+    std::stringstream ss;
+    ss.str(s);
+    std::string item;
+    while (std::getline(ss, item, delim))
+	{
+        elems.push_back(item);
+    }
+}
+
+std::vector<std::string> split(const std::string &s, char delim)
+{
+    std::vector<std::string> elems;
+    split(s, delim, elems);
+    return elems;
+}
+
+// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
+std::string& rtrim(std::string& s, const char* t)
+{
+    s.erase(s.find_last_not_of(t) + 1);
+    return s;
+}
+
+std::string& ltrim(std::string& s, const char* t)
+{
+    s.erase(0, s.find_first_not_of(t));
+    return s;
+}
+
+std::string& trim(std::string& s, const char* t)
+{
+    return ltrim(rtrim(s, t), t);
+}

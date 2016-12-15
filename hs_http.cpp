@@ -1,9 +1,9 @@
 #include <memory>
 #include <functional>
-#include <sstream>
 
 #include "hs_http.h"
 #include "hs_exception.h"
+#include "hs_misc.h"
 
 extern "C"
 {
@@ -16,24 +16,6 @@ http_response_ptr make_http_response_ptr(http_response *response)
 {
 	return http_response_ptr(response, [](http_response *p){ http_response_free(p); });
 }
-
-static void split(const std::string &s, char delim, std::vector<std::string> &elems)
-{
-    std::stringstream ss;
-    ss.str(s);
-    std::string item;
-    while (std::getline(ss, item, delim))
-	{
-        elems.push_back(item);
-    }
-}
-
-// static std::vector<std::string> split(const std::string &s, char delim)
-// {
-//     std::vector<std::string> elems;
-//     split(s, delim, elems);
-//     return elems;
-// }
 
 using http_request_function = std::function<http_response *(const char *)>;
 

@@ -40,7 +40,7 @@ int hs(hs_settings &setting);
 void hs_impl(hs_settings &setting);
 
 bool hs_check_data(std::vector<uint8_t> data);
-std::string hs_parse_setting(const std::string &line);
+std::string hs_parse_setting(const std::string &line, hs_settings &setting);
 std::string hs_parse_command(const std::string &line);
 
 int main(int argc, char *argv[])
@@ -98,7 +98,7 @@ void hs_impl(hs_settings &setting)
 		result += "----------\n";
 		if (line.compare(0, 2, "s:") == 0)
 		{
-			result += hs_parse_setting(line);
+			result += hs_parse_setting(line, setting);
 		}
 		else
 		{
@@ -120,9 +120,30 @@ bool hs_check_data(std::vector<uint8_t> data)
 	return true;
 }
 
-std::string hs_parse_setting(const std::string &line)
+std::string hs_parse_setting(const std::string &line, hs_settings &setting)
 {
-	return "Not implement yet.\n";
+	try
+	{
+		auto kv = split(line, '=');
+		trim(kv.at(0));
+		trim(kv.at(1));
+
+		if (kv.at(0).compare("s:interval") == 0)
+		{
+			unsigned int i = std::stoi(kv.at(1));
+			setting.interval = i;
+
+			std::string ret = "set interval to ";
+			ret += kv.at(1);
+			ret += "\n";
+			return ret;
+		}
+		throw std::exception();
+	}
+	catch (std::exception &e)
+	{
+		return "Not implement yet.\n";
+	}
 }
 
 std::string hs_parse_command(const std::string &line)
