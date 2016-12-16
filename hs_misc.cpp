@@ -37,7 +37,7 @@ std::string hs_exec(const std::string &cmd)
 {
     char buffer[128];
     std::string result = "";
-    std::unique_ptr<FILE, std::function<int (FILE *)>> pipe(popen(cmd.c_str(), "r"), pclose);
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
     if (!pipe) throw std::runtime_error("popen() failed!");
     while (!feof(pipe.get()))
 	{

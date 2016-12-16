@@ -10,13 +10,11 @@ extern "C"
 #include "base64.h"
 }
 
-using base64_unique_ptr = std::unique_ptr<unsigned char, std::function<void(unsigned char *)>>;
-
 template <typename F>
 std::vector<unsigned char> hs_base64_impl(const unsigned char *src, size_t len, F f)
 {
 	size_t l = 0;
-	base64_unique_ptr s(f(src, len, &l), [](unsigned char *buf){ if (buf) free(buf); });
+	std::unique_ptr<unsigned char, decltype(&free)> s(f(src, len, &l), free);
 	if (s.get() == nullptr)
 	{
 		throw hs_exception("base64 encode/decode error.");

@@ -1,7 +1,5 @@
 #include <cstring>
 #include <string>
-#include <memory>
-#include <functional>
 
 #include "hs_compress.h"
 #include "hs_exception.h"
