@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -g
+CFLAGS=-Wall -s -Os
 CPP=g++
 CPPFLAGS=$(CFLAGS) -std=c++11
 LDFLAGS=-Luzlib/lib -ltinf tiny-AES128-C/aes.o
