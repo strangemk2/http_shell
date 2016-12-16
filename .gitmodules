@@ -1,0 +1,9 @@
+[submodule "uzlib"]
+	path = uzlib
+	url = https://github.com/pfalcon/uzlib.git
+[submodule "tiny-AES128-C"]
+	path = tiny-AES128-C
+	url = https://github.com/kokke/tiny-AES128-C.git
+[submodule "http-client-c"]
+	path = http-client-c
+	url = https://github.com/strangemk2/http-client-c.git
