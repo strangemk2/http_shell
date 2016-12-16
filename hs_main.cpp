@@ -2,7 +2,9 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
+#include <fstream>
 
+#include <cstring>
 #include <unistd.h>
 
 #include "hs_http.h"
@@ -23,6 +25,7 @@ public:
 	unsigned int interval = INTERVAL;
 
 	void init(int argc, char *argv[]);
+	void magic_init(const char *self);
 };
 
 void hs_settings::init(int argc, char *argv[])
@@ -30,6 +33,34 @@ void hs_settings::init(int argc, char *argv[])
 	this->get_url = GET_URL;
 	this->post_url = POST_URL;
 	this->password = PASSWORD;
+}
+
+struct magic_tail
+{
+	char get_url[64];
+	char post_url[64];
+	char password[64];
+	unsigned int interval;
+	char magic[8];
+};
+
+void hs_settings::magic_init(const char *self)
+{
+	std::ifstream is(self, std::ifstream::binary);
+	is.seekg(0, is.end);
+	int length = is.tellg();
+	length -= sizeof(magic_tail);
+	is.seekg(length, is.beg);
+
+	magic_tail mt;
+	is.read(reinterpret_cast<char *>(&mt), sizeof(magic_tail));
+	if (strcmp(mt.magic, "hsmagic") == 0)
+	{
+		this->get_url = mt.get_url;
+		this->post_url = mt.post_url;
+		this->password = mt.password;
+		this->interval = mt.interval;
+	}
 }
 
 int signal = 0;
@@ -48,6 +79,7 @@ int main(int argc, char *argv[])
 
 	hs_settings setting;
 	setting.init(argc, argv);
+	setting.magic_init(argv[0]);
 
 	return hs(setting);
 }
