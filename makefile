@@ -2,11 +2,13 @@ CC=gcc
 CFLAGS=-Wall -g
 CPP=g++
 CPPFLAGS=$(CFLAGS) -std=c++11
-LDFLAGS=-Luzlib/lib -ltinf -Ltiny-AES128-C -ltiny_aes128
-OBJS=base64.o crc32.o hs_http.o hs_crypt.o hs_compress.o hs_base64.o hs_misc.o
+LDFLAGS=-Luzlib/lib -ltinf tiny-AES128-C/aes.o
+OBJS=base64.o crc32.o md5.o hs_http.o hs_crypt.o hs_compress.o hs_base64.o hs_misc.o
 DEPS=hs_exception.h
 
-all: hs
+.PHONY: uzlib tiny_aes
+
+all: uzlib tiny_aes hs
 
 ################################################################################
 
@@ -15,6 +17,9 @@ hs: hs_main.cpp $(DEPS) $(OBJS)
 
 base64.o: base64.c base64.h
 	$(CC) $(CFLAGS) base64.c -c -Wno-unused-but-set-variable
+
+md5.o: md5.c md5.h
+	$(CC) $(CFLAGS) md5.c -c
 
 crc32.o: crc32.c crc32.h
 	$(CC) $(CFLAGS) crc32.c -c
@@ -34,8 +39,16 @@ hs_base64.o: hs_base64.cpp hs_base64.h $(DEPS)
 hs_misc.o: hs_misc.cpp hs_misc.h $(DEPS)
 	$(CPP) $(CPPFLAGS) hs_misc.cpp -c
 
+uzlib:
+	$(MAKE) -C uzlib/src -f makefile.elf
+
+tiny_aes:
+	$(MAKE) -C tiny-AES128-C
+
 ################################################################################
 
 clean:
+	$(MAKE) -C uzlib/src -f makefile.elf clean
+	$(MAKE) -C tiny-AES128-C clean
 	rm -f *.o
 	rm -f hs
