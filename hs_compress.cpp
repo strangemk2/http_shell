@@ -1,6 +1,8 @@
 #include <cstring>
 #include <string>
 
+#include <cstdlib>
+
 #include "hs_compress.h"
 #include "hs_exception.h"
 

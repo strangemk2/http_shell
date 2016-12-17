@@ -2,6 +2,8 @@
 #include <memory>
 #include <functional>
 
+#include <cstdlib>
+
 #include "hs_base64.h"
 #include "hs_exception.h"
 

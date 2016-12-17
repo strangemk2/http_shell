@@ -1,25 +1,23 @@
-CC=gcc
-CFLAGS=-Wall -s -Os
-CPP=g++
+CC=clang
+CFLAGS=-Wall -Os
+CPP=clang++
 CPPFLAGS=$(CFLAGS) -std=c++11
-LDFLAGS=-Luzlib/lib -ltinf tiny-AES128-C/aes.o
+LDFLAGS=
+UZDIR=uzlib/src
+UZOBJS=$(UZDIR)/adler32.o $(UZDIR)/crc32.o $(UZDIR)/defl_static.o $(UZDIR)/genlz77.o $(UZDIR)/tinfgzip.o $(UZDIR)/tinflate.o $(UZDIR)/tinfzlib.o 
+AESDIR=tiny-AES128-C
+AESOBJS=$(AESDIR)/aes.o
 OBJS=base64.o crc32.o md5.o hs_http.o hs_crypt.o hs_compress.o hs_base64.o hs_misc.o
 DEPS=hs_exception.h
 
-.PHONY: uzlib tiny_aes clean
+.PHONY: clean
 
-all: uzlib tiny_aes hs
+all: hs
 
 ################################################################################
 
-hs: hs_main.cpp $(DEPS) $(OBJS)
-	$(CPP) $(CPPFLAGS) hs_main.cpp $(OBJS) -o $@ $(LDFLAGS)
-
-base64.o: base64.c base64.h
-	$(CC) $(CFLAGS) base64.c -c -Wno-unused-but-set-variable
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+hs: hs_main.cpp $(DEPS) $(OBJS) $(UZOBJS) $(AESOBJS)
+	$(CPP) $(CPPFLAGS) hs_main.cpp $(OBJS) $(UZOBJS) $(AESOBJS) -o $@ $(LDFLAGS)
 
 hs_http.o: hs_http.cpp hs_http.h $(DEPS)
 	$(CPP) $(CPPFLAGS) hs_http.cpp -c -Ihttp-client-c/src
@@ -33,19 +31,20 @@ hs_compress.o: hs_compress.cpp hs_compress.h $(DEPS)
 hs_base64.o: hs_base64.cpp hs_base64.h $(DEPS)
 	$(CPP) $(CPPFLAGS) hs_base64.cpp -c
 
-hs_misc.o: hs_misc.cpp hs_misc.h $(DEPS)
-	$(CPP) $(CPPFLAGS) hs_misc.cpp -c
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
-uzlib:
-	$(MAKE) -C uzlib/src -f makefile.elf
+$(UZDIR)/%.o: $(UZDIR)/%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
-tiny_aes:
-	$(MAKE) -C tiny-AES128-C
+$(AESDIR)/%.o: $(AESDIR)/%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
 
 ################################################################################
 
 clean:
-	$(MAKE) -C uzlib/src -f makefile.elf clean
-	$(MAKE) -C tiny-AES128-C clean
+	rm -f tiny-AES128-C/*.o
+	rm -f uzlib/src/*.o
 	rm -f *.o
 	rm -f hs

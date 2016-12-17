@@ -63,7 +63,7 @@ void hs_settings::magic_init(const char *self)
 	}
 }
 
-int signal = 0;
+int hs_signal = 0;
 
 void daemonize();
 int hs(hs_settings &setting);
@@ -91,7 +91,7 @@ void daemonize()
 
 int hs(hs_settings &setting)
 {
-	while (signal == 0)
+	while (hs_signal == 0)
 	{
 		try
 		{
