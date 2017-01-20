@@ -10,7 +10,7 @@ setting_list = [
         {'name':'interval', 'type':'num'},
         {'name':'magic', 'type':'str'}
 ]
-magic_structure = "<64s64s64sI8s";
+magic_structure = "<128s128s64sI8s";
 
 def setting_index(setting_list, name):
     for i in range(len(setting_list)):

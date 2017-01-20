@@ -37,8 +37,8 @@ void hs_settings::init(int argc, char *argv[])
 
 struct magic_tail
 {
-	char get_url[64];
-	char post_url[64];
+	char get_url[128];
+	char post_url[128];
 	char password[64];
 	unsigned int interval;
 	char magic[8];
