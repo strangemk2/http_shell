@@ -110,6 +110,8 @@ int hs(hs_settings &setting)
 void hs_impl(hs_settings &setting)
 {
 	auto hres = hs_http_get(setting.get_url);
+	if (hres.status_code != 200)
+		throw hs_exception("http get error.");
 	if (hres.body.length() == 0) return;
 	auto deflated = hs_gunzip(
 			hs_decrypt(
@@ -143,7 +145,9 @@ void hs_impl(hs_settings &setting)
 				hs_gzip(reinterpret_cast<const unsigned char *>(result.c_str()), result.length()),
 				setting.password));
 	auto post_data = std::string("data=") + url_encode(std::string(encoded_data.begin(), encoded_data.end()));
-	hs_http_post(setting.post_url, post_data, "");
+	auto pres = hs_http_post(setting.post_url, post_data, "");
+	if (pres.status_code != 200)
+		throw hs_exception("http post error.");
 }
 
 bool hs_check_data(std::vector<uint8_t> data)
